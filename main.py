@@ -1,4 +1,5 @@
 import re
+import csv
 import requests
 from bs4 import BeautifulSoup
 
@@ -6,6 +7,25 @@ from bs4 import BeautifulSoup
 def get_page(url):
     response = requests.get(url)
     return response.text
+
+
+def write_csv(data):
+    with open('movies.csv', 'a', encoding='utf-8', newline='') as file:
+        writer = csv.writer(file)
+        directors = ''
+        genres = ''
+        stars = ''
+        for director in data.get('director', ''):
+            directors += director + ', '
+        for genre in data.get('genres', ''):
+            genres += genre + ', '
+        for star in data.get('stars', ''):
+            stars += star + ', '
+        data['director'] = directors[:-2]
+        data['genres'] = genres[:-2]
+        data['stars'] = stars[:-2]
+        writer.writerow((data.get('ru_name', ''), data.get('eng_name', ''), data.get('year', ''),
+                        data.get('director', ''), data.get('stars', ''), data.get('genres', '')))
 
 
 # Make list of some data like genre, actors. Made for get rid of redundancy
@@ -49,7 +69,8 @@ def fetch_data(page_text):
 def main():
     url = input()
     page_text = get_page(url)
-    fetch_data(page_text)
+    data = fetch_data(page_text)
+    write_csv(data)
 
 
 if __name__ == '__main__':
